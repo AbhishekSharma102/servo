@@ -14,6 +14,17 @@ use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
 
+macro_rules! create_pipeline_namespace_function {
+    ($func_name:ident, $func_return_data_type:ident, $self:ident, $index_name:ident) => {
+        fn $func_name(&mut $self) -> $func_return_data_type {
+            $func_return_data_type {
+                namespace_id: $self.id,
+                index: $index_name($self.next_index()),
+            }
+        }
+    };
+}
+
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum TraversalDirection {
     Forward(usize),
@@ -136,68 +147,15 @@ impl PipelineNamespace {
         NonZeroU32::new(self.index).expect("pipeline id index wrapped!")
     }
 
-    fn next_pipeline_id(&mut self) -> PipelineId {
-        PipelineId {
-            namespace_id: self.id,
-            index: PipelineIndex(self.next_index()),
-        }
-    }
-
-    fn next_browsing_context_id(&mut self) -> BrowsingContextId {
-        BrowsingContextId {
-            namespace_id: self.id,
-            index: BrowsingContextIndex(self.next_index()),
-        }
-    }
-
-    fn next_history_state_id(&mut self) -> HistoryStateId {
-        HistoryStateId {
-            namespace_id: self.id,
-            index: HistoryStateIndex(self.next_index()),
-        }
-    }
-
-    fn next_message_port_id(&mut self) -> MessagePortId {
-        MessagePortId {
-            namespace_id: self.id,
-            index: MessagePortIndex(self.next_index()),
-        }
-    }
-
-    fn next_message_port_router_id(&mut self) -> MessagePortRouterId {
-        MessagePortRouterId {
-            namespace_id: self.id,
-            index: MessagePortRouterIndex(self.next_index()),
-        }
-    }
-
-    fn next_broadcast_channel_router_id(&mut self) -> BroadcastChannelRouterId {
-        BroadcastChannelRouterId {
-            namespace_id: self.id,
-            index: BroadcastChannelRouterIndex(self.next_index()),
-        }
-    }
-
-    fn next_service_worker_id(&mut self) -> ServiceWorkerId {
-        ServiceWorkerId {
-            namespace_id: self.id,
-            index: ServiceWorkerIndex(self.next_index()),
-        }
-    }
-
-    fn next_service_worker_registration_id(&mut self) -> ServiceWorkerRegistrationId {
-        ServiceWorkerRegistrationId {
-            namespace_id: self.id,
-            index: ServiceWorkerRegistrationIndex(self.next_index()),
-        }
-    }
-
-    fn next_blob_id(&mut self) -> BlobId {
-        BlobId {
-            namespace_id: self.id,
-            index: BlobIndex(self.next_index()),
-        }
-    }
+    create_pipeline_namespace_function!{next_pipeline_id, PipelineId, self, PipelineIndex}
+    create_pipeline_namespace_function!{next_browsing_context_id, BrowsingContextId, self, BrowsingContextIndex}
+    create_pipeline_namespace_function!{next_history_state_id, HistoryStateId, self, HistoryStateIndex}
+    create_pipeline_namespace_function!{next_message_port_id, MessagePortId, self, MessagePortIndex}
+    create_pipeline_namespace_function!{next_message_port_router_id, MessagePortRouterId, self, MessagePortRouterIndex}
+    create_pipeline_namespace_function!{next_broadcast_channel_router_id, BroadcastChannelRouterId, self, BroadcastChannelRouterIndex}
+    create_pipeline_namespace_function!{next_service_worker_id, ServiceWorkerId, self, ServiceWorkerIndex}
+    create_pipeline_namespace_function!{next_service_worker_registration_id, ServiceWorkerRegistrationId, self, ServiceWorkerRegistrationIndex}
+    create_pipeline_namespace_function!{next_blob_id, BlobId, self, BlobIndex}
 }
 
 thread_local!(pub static PIPELINE_NAMESPACE: Cell<Option<PipelineNamespace>> = Cell::new(None));
